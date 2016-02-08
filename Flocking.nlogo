@@ -3,6 +3,15 @@ turtles-own [
   nearest-neighbor   ;; closest one of our flockmates
 ]
 
+globals [
+
+  flocked-boids
+  mean-number-flocks-per-boid
+  mean-distance-between-boids
+  std-deviation-direction
+
+]
+
 to setup
   clear-all
   create-turtles population [
@@ -28,6 +37,7 @@ to go
   ;; for greater efficiency, at the expense of smooth
   ;; animation, substitute the following line instead:
   ;;   ask turtles [ fd 1 ]
+  show mean-distance
   tick
 end
 
@@ -109,25 +119,44 @@ to turn-away [new-heading max-turn]  ;; turtle procedure
   turn-at-most (subtract-headings heading new-heading) max-turn
 end
 
+
 ;; turn right by "turn" degrees (or left if "turn" is negative),
 ;; but never turn more than "max-turn" degrees
 to turn-at-most [turn max-turn]  ;; turtle procedure
   ifelse abs turn > max-turn [
     ifelse turn > 0 [
       rt max-turn
-      ]
-      [
-        lt max-turn
-      ]
     ]
     [
-      rt turn
+      lt max-turn
     ]
+  ]
+  [
+    rt turn
+  ]
 end
 
 
 ; Copyright 1998 Uri Wilensky.
 ; See Info tab for full copyright and license.
+
+;; ================ Own functions added here ================ ;;
+
+to-report mean-distance
+  let dist 0
+
+  ask turtles [
+    set dist (dist + (distance nearest-neighbor))
+  ]
+
+  set mean-distance-between-boids (dist / count turtles)
+
+  report mean-distance-between-boids;
+end
+
+
+
+
 @#$#@#$#@
 GRAPHICS-WINDOW
 250
@@ -214,7 +243,7 @@ max-align-turn
 max-align-turn
 0.0
 20.0
-5
+3.75
 0.25
 1
 degrees
@@ -229,7 +258,7 @@ max-cohere-turn
 max-cohere-turn
 0.0
 20.0
-3
+10
 0.25
 1
 degrees
@@ -244,7 +273,7 @@ max-separate-turn
 max-separate-turn
 0.0
 20.0
-1.5
+4
 0.25
 1
 degrees
@@ -259,7 +288,7 @@ vision
 vision
 0.0
 10.0
-3
+8
 0.5
 1
 patches
@@ -279,6 +308,50 @@ minimum-separation
 1
 patches
 HORIZONTAL
+
+MONITOR
+4
+319
+102
+364
+Flocked boids
+flocked-boids
+17
+1
+11
+
+MONITOR
+4
+365
+213
+410
+Mean number of flocks per boid
+mean-number-flocks-per-boid
+17
+1
+11
+
+MONITOR
+4
+411
+197
+456
+Mean distance between boids
+mean-distance-between-boids
+17
+1
+11
+
+MONITOR
+4
+457
+162
+502
+std-deviation-direction
+std-deviation-direction
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
