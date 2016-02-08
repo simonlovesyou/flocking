@@ -146,7 +146,9 @@ to-report mean-distance
   let dist 0
 
   ask turtles [
-    set dist (dist + (distance nearest-neighbor))
+    if(nearest-neighbor != 0) [
+      set dist (dist + (distance nearest-neighbor))
+    ]
   ]
 
   set mean-distance-between-boids (dist / count turtles)
