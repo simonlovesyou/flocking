@@ -1,6 +1,9 @@
 turtles-own [
   flockmates         ;; agentset of nearby turtles
   nearest-neighbor   ;; closest one of our flockmates
+
+  ;; Added variable
+  visited
 ]
 
 globals [
@@ -18,7 +21,9 @@ to setup
     set color yellow - 2 + random 7  ;; random shades look nice
     set size 1.5  ;; easier to see
     setxy random-xcor random-ycor
+    set visited false
   ]
+
   reset-ticks
 end
 
@@ -37,7 +42,11 @@ to go
   ;; for greater efficiency, at the expense of smooth
   ;; animation, substitute the following line instead:
   ;;   ask turtles [ fd 1 ]
-  show mean-distance
+  set mean-distance-between-boids mean-distance
+  set flocked-boids number-of-boids-with-neighbors
+  reset
+  set std-deviation-direction std-dev-heading
+  set mean-number-flocks-per-boid count-flocks
   tick
 end
 
@@ -156,6 +165,84 @@ to-report mean-distance
   report mean-distance-between-boids;
 end
 
+to-report count-flocks    ;; count flocks using breadth-first
+
+  ifelse((ticks mod 10) = 0) [
+    let numberOfSchools 0
+    ask turtles [
+      if(visited = false) [
+        let schoolSize 1
+        let school []
+        set visited true
+        set color green
+        let done false
+
+        ask flockmates [
+          set school lput self school
+        ]
+
+        while[(length school) > 0] [
+          let boid first school
+          set school but-first school
+
+          ask boid [
+            if(visited = false) [
+              set visited true
+              set color green
+              ask flockmates [ set school lput self school ]
+              set schoolSize schoolSize + 1
+            ]
+          ]
+        ]
+        if(schoolSize > 1) [
+          set numberOfSchools numberOfSchools + 1
+        ]
+        set schoolSize 0
+      ]
+    ]
+    report numberOfSchools
+  ]
+  [
+    report mean-number-flocks-per-boid
+  ]
+end
+
+to-report number-of-boids-with-neighbors
+
+  let flock-boids 0
+
+  ask turtles [
+    if any? flockmates [
+      set flock-boids (flock-boids + 1)
+    ]
+  ]
+
+  set flocked-boids flock-boids
+
+  report flocked-boids
+
+end
+
+to-report std-dev-heading
+
+  let headingList []
+
+  ask turtles [
+    set headingList fput heading headingList
+  ]
+
+  report standard-deviation headingList;
+
+end
+
+to reset
+  ask turtles [
+    set color yellow
+    set visited false
+  ]
+end
+
+
 
 
 
@@ -230,7 +317,7 @@ population
 population
 1.0
 1000.0
-300
+203
 1.0
 1
 NIL
@@ -245,7 +332,7 @@ max-align-turn
 max-align-turn
 0.0
 20.0
-3.75
+20
 0.25
 1
 degrees
@@ -260,7 +347,7 @@ max-cohere-turn
 max-cohere-turn
 0.0
 20.0
-10
+11
 0.25
 1
 degrees
@@ -275,7 +362,7 @@ max-separate-turn
 max-separate-turn
 0.0
 20.0
-4
+3.25
 0.25
 1
 degrees
