@@ -114,7 +114,8 @@ end
 to turn-at-most [turn max-turn]  ;; turtle procedure
   ifelse abs turn > max-turn [
     ifelse turn > 0 [
-      rt max-turn ]
+      rt max-turn
+      ]
       [
         lt max-turn
       ]
