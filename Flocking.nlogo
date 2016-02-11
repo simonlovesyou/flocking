@@ -9,7 +9,7 @@ turtles-own [
 globals [
 
   flocked-boids
-  mean-number-flocks-per-boid
+  mean-number-boids-per-flock
   mean-distance-between-boids
   std-deviation-direction
 
@@ -42,11 +42,15 @@ to go
   ;; for greater efficiency, at the expense of smooth
   ;; animation, substitute the following line instead:
   ;;   ask turtles [ fd 1 ]
+  if((ticks mod 500) = 0 and (ticks != 0)) [
+     set max-align-turn max-align-turn + 2
+  ]
+
   set mean-distance-between-boids mean-distance
   set flocked-boids number-of-boids-with-neighbors
   reset
   set std-deviation-direction std-dev-heading
-  set mean-number-flocks-per-boid count-flocks
+  set mean-number-boids-per-flock (population / count-flocks)
   tick
 end
 
@@ -245,7 +249,6 @@ end
 
 
 
-
 @#$#@#$#@
 GRAPHICS-WINDOW
 250
@@ -317,7 +320,7 @@ population
 population
 1.0
 1000.0
-203
+200
 1.0
 1
 NIL
@@ -347,7 +350,7 @@ max-cohere-turn
 max-cohere-turn
 0.0
 20.0
-11
+2.5
 0.25
 1
 degrees
@@ -362,7 +365,7 @@ max-separate-turn
 max-separate-turn
 0.0
 20.0
-3.25
+1.5
 0.25
 1
 degrees
@@ -377,7 +380,7 @@ vision
 vision
 0.0
 10.0
-8
+3.5
 0.5
 1
 patches
@@ -414,8 +417,8 @@ MONITOR
 365
 213
 410
-Mean number of flocks per boid
-mean-number-flocks-per-boid
+Mean number of boids per flock
+mean-number-boids-per-flock
 17
 1
 11
@@ -837,6 +840,36 @@ setup
 repeat 200 [ go ]
 @#$#@#$#@
 @#$#@#$#@
+<experiments>
+  <experiment name="experiment" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="4000"/>
+    <metric>mean-number-boids-per-flock</metric>
+    <metric>mean-distance-between-boids</metric>
+    <metric>std-deviation-direction</metric>
+    <metric>flocked-boids</metric>
+    <metric>max-align-turn</metric>
+    <enumeratedValueSet variable="max-align-turn">
+      <value value="6"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-cohere-turn">
+      <value value="2.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="population">
+      <value value="200"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="minimum-separation">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="vision">
+      <value value="3.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-separate-turn">
+      <value value="1.5"/>
+    </enumeratedValueSet>
+  </experiment>
+</experiments>
 @#$#@#$#@
 @#$#@#$#@
 default
