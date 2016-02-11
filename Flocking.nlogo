@@ -171,44 +171,41 @@ end
 
 to-report count-flocks    ;; count flocks using breadth-first
 
-  ifelse((ticks mod 10) = 0) [
-    let numberOfSchools 0
-    ask turtles [
-      if(visited = false) [
-        let schoolSize 1
-        let school []
-        set visited true
-        set color green
-        let done false
 
-        ask flockmates [
-          set school lput self school
-        ]
+   let numberOfSchools 0
+   ask turtles [
+     if(visited = false) [
+       let schoolSize 1
+       let school []
+       set visited true
+       let done false
 
-        while[(length school) > 0] [
-          let boid first school
-          set school but-first school
+       ask flockmates [
+         set school lput self school
+       ]
 
-          ask boid [
-            if(visited = false) [
-              set visited true
-              set color green
-              ask flockmates [ set school lput self school ]
-              set schoolSize schoolSize + 1
-            ]
-          ]
-        ]
-        if(schoolSize > 1) [
-          set numberOfSchools numberOfSchools + 1
-        ]
-        set schoolSize 0
-      ]
-    ]
-    report numberOfSchools
-  ]
-  [
-    report mean-number-flocks-per-boid
-  ]
+       while[(length school) > 0] [
+         let boid first school
+         set school but-first school
+
+         ask boid [
+           if(visited = false) [
+             set visited true
+             ask flockmates [ set school lput self school ]
+             set schoolSize schoolSize + 1
+           ]
+         ]
+       ]
+       if(schoolSize > 1) [
+         set numberOfSchools numberOfSchools + 1
+       ]
+       set schoolSize 0
+     ]
+   ]
+   report numberOfSchools
+
+    ;report mean-number-flocks-per-boid
+
 end
 
 to-report number-of-boids-with-neighbors
