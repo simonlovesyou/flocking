@@ -9,7 +9,7 @@ turtles-own [
 globals [
 
   flocked-boids
-  mean-number-flocks-per-boid
+  mean-number-boids-per-flock
   mean-distance-between-boids
   std-deviation-direction
 
@@ -42,11 +42,20 @@ to go
   ;; for greater efficiency, at the expense of smooth
   ;; animation, substitute the following line instead:
   ;;   ask turtles [ fd 1 ]
+  if((ticks mod 500) = 0 and (ticks != 0)) [
+     ;set max-align-turn max-align-turn + 2
+  ]
+
   set mean-distance-between-boids mean-distance
   set flocked-boids number-of-boids-with-neighbors
   reset
   set std-deviation-direction std-dev-heading
-  set mean-number-flocks-per-boid count-flocks
+  let numberOfFlocks count-flocks
+  if(numberOfFlocks > 0) [
+    show numberOfFlocks
+    set mean-number-boids-per-flock (population / numberOfFlocks)
+  ]
+
   tick
 end
 
@@ -65,7 +74,14 @@ to flock  ;; turtle procedure
 end
 
 to find-flockmates  ;; turtle procedure
-  set flockmates other turtles in-radius vision
+  ;set flockmates n-of 5 other turtles in-radius vision [distance myself]
+  ifelse(count other turtles in-radius vision > max-allowed-neighbours) [
+    set flockmates max-n-of max-allowed-neighbours other turtles in-radius vision [distance myself]
+  ]
+  [
+    set flockmates other turtles in-radius vision
+  ]
+
 end
 
 to find-nearest-neighbor ;; turtle procedure
@@ -167,44 +183,41 @@ end
 
 to-report count-flocks    ;; count flocks using breadth-first
 
-  ifelse((ticks mod 10) = 0) [
-    let numberOfSchools 0
-    ask turtles [
-      if(visited = false) [
-        let schoolSize 1
-        let school []
-        set visited true
-        set color green
-        let done false
 
-        ask flockmates [
-          set school lput self school
-        ]
+   let numberOfSchools 0
+   ask turtles [
+     if(visited = false) [
+       let schoolSize 1
+       let school []
+       set visited true
+       let done false
 
-        while[(length school) > 0] [
-          let boid first school
-          set school but-first school
+       ask flockmates [
+         set school lput self school
+       ]
 
-          ask boid [
-            if(visited = false) [
-              set visited true
-              set color green
-              ask flockmates [ set school lput self school ]
-              set schoolSize schoolSize + 1
-            ]
-          ]
-        ]
-        if(schoolSize > 1) [
-          set numberOfSchools numberOfSchools + 1
-        ]
-        set schoolSize 0
-      ]
-    ]
-    report numberOfSchools
-  ]
-  [
-    report mean-number-flocks-per-boid
-  ]
+       while[(length school) > 0] [
+         let boid first school
+         set school but-first school
+
+         ask boid [
+           if(visited = false) [
+             set visited true
+             ask flockmates [ set school lput self school ]
+             set schoolSize schoolSize + 1
+           ]
+         ]
+       ]
+       if(schoolSize > 1) [
+         set numberOfSchools numberOfSchools + 1
+       ]
+       set schoolSize 0
+     ]
+   ]
+   report numberOfSchools
+
+    ;report mean-number-flocks-per-boid
+
 end
 
 to-report number-of-boids-with-neighbors
@@ -241,10 +254,6 @@ to reset
     set visited false
   ]
 end
-
-
-
-
 
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -317,7 +326,7 @@ population
 population
 1.0
 1000.0
-203
+200
 1.0
 1
 NIL
@@ -332,7 +341,7 @@ max-align-turn
 max-align-turn
 0.0
 20.0
-20
+8
 0.25
 1
 degrees
@@ -347,7 +356,7 @@ max-cohere-turn
 max-cohere-turn
 0.0
 20.0
-11
+5.5
 0.25
 1
 degrees
@@ -362,7 +371,7 @@ max-separate-turn
 max-separate-turn
 0.0
 20.0
-3.25
+3.5
 0.25
 1
 degrees
@@ -377,7 +386,7 @@ vision
 vision
 0.0
 10.0
-8
+3.5
 0.5
 1
 patches
@@ -400,9 +409,9 @@ HORIZONTAL
 
 MONITOR
 4
-319
+354
 102
-364
+399
 Flocked boids
 flocked-boids
 17
@@ -411,20 +420,20 @@ flocked-boids
 
 MONITOR
 4
-365
+400
 213
-410
-Mean number of flocks per boid
-mean-number-flocks-per-boid
+445
+Mean number of boids per flock
+mean-number-boids-per-flock
 17
 1
 11
 
 MONITOR
 4
-411
+446
 197
-456
+491
 Mean distance between boids
 mean-distance-between-boids
 17
@@ -433,14 +442,29 @@ mean-distance-between-boids
 
 MONITOR
 4
-457
+492
 162
-502
+537
 std-deviation-direction
 std-deviation-direction
 17
 1
 11
+
+SLIDER
+4
+319
+237
+352
+max-allowed-neighbours
+max-allowed-neighbours
+0
+50
+50
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -837,6 +861,39 @@ setup
 repeat 200 [ go ]
 @#$#@#$#@
 @#$#@#$#@
+<experiments>
+  <experiment name="experiment" repetitions="20" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="5000"/>
+    <metric>mean-number-boids-per-flock</metric>
+    <metric>mean-distance-between-boids</metric>
+    <metric>std-deviation-direction</metric>
+    <metric>flocked-boids</metric>
+    <metric>max-align-turn</metric>
+    <enumeratedValueSet variable="max-align-turn">
+      <value value="8"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-cohere-turn">
+      <value value="5.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="population">
+      <value value="200"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="minimum-separation">
+      <value value="1"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="vision">
+      <value value="3.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-separate-turn">
+      <value value="3.5"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="max-allowed-neighbours">
+      <value value="1"/>
+    </enumeratedValueSet>
+  </experiment>
+</experiments>
 @#$#@#$#@
 @#$#@#$#@
 default
