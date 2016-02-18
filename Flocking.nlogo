@@ -50,6 +50,7 @@ to go
   set flocked-boids number-of-boids-with-neighbors
   reset
   set std-deviation-direction std-dev-heading
+
   let numberOfFlocks count-flocks
   if(numberOfFlocks > 0) [
     show numberOfFlocks
@@ -255,6 +256,12 @@ to reset
   ]
 end
 
+<<<<<<< HEAD
+=======
+
+
+
+>>>>>>> 0cd161cde9be2c5e11ca5392f5066e80d208b3d2
 @#$#@#$#@
 GRAPHICS-WINDOW
 250
